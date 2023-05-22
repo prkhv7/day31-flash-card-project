@@ -6,13 +6,25 @@ BACKGROUND_COLOR = "#B1DDC6"
 
 data = pandas.read_csv("data/french_words.csv")
 to_learn = data.to_dict(orient="records")
+random_word = {}
 
 
 def next_card():
+    global random_word, flip_timer
+    window.after_cancel(flip_timer)
     random_word = random.choice(to_learn)
     french_word = random_word['French']
-    flash_card.itemconfig(word, text=french_word)
-    flash_card.itemconfig(title, text='French')
+    flash_card.itemconfig(word, text=french_word, fill="black")
+    flash_card.itemconfig(title, text='French', fill="black")
+    flash_card.itemconfig(card, image=card_front_img)
+    flip_timer = window.after(3000, func=flip_card)
+
+
+def flip_card():
+    flash_card.itemconfig(card, image=card_back_img)
+    flash_card.itemconfig(title, text='English', fill="white")
+    english_word = random_word['English']
+    flash_card.itemconfig(word, text=english_word, fill="white")
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -22,6 +34,8 @@ window = Tk()
 window.title("Flashy")
 window.config(pady=50, padx=50, bg=BACKGROUND_COLOR)
 
+flip_timer = window.after(3000, func=flip_card)
+
 # Images
 card_back_img = PhotoImage(file="images/card_back.png")
 card_front_img = PhotoImage(file="images/card_front.png")
@@ -30,8 +44,8 @@ wrong_img = PhotoImage(file="images/wrong.png")
 
 # Flash card
 flash_card = Canvas(width=800, height=526, highlightthickness=0, bg=BACKGROUND_COLOR)
-flash_card.create_image(400, 263, image=card_back_img)
-flash_card.create_image(400, 263, image=card_front_img)
+# flash_card.create_image(400, 263, image=card_back_img)
+card = flash_card.create_image(400, 263, image=card_front_img)
 title = flash_card.create_text(400, 150, font=("Ariel", 40, "italic"), text="", fill="black")
 word = flash_card.create_text(400, 263, font=("Ariel", 60, "bold"), text="", fill="black")
 flash_card.grid(column=0, row=0, columnspan=2)
