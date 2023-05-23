@@ -4,15 +4,20 @@ import random
 
 BACKGROUND_COLOR = "#B1DDC6"
 
-data = pandas.read_csv("data/french_words.csv")
-to_learn = data.to_dict(orient="records")
+try:
+    data = pandas.read_csv('data/words_to_learn.csv')
+except FileNotFoundError:
+    print("File 'words_to_learn.csv' doesn't exist, using 'french_words.csv' file.")
+    data = pandas.read_csv("data/french_words.csv")
+
+words_to_learn = data.to_dict(orient="records")
 random_word = {}
 
 
 def next_card():
     global random_word, flip_timer
     window.after_cancel(flip_timer)
-    random_word = random.choice(to_learn)
+    random_word = random.choice(words_to_learn)
     french_word = random_word['French']
     flash_card.itemconfig(word, text=french_word, fill="black")
     flash_card.itemconfig(title, text='French', fill="black")
@@ -25,6 +30,12 @@ def flip_card():
     flash_card.itemconfig(title, text='English', fill="white")
     english_word = random_word['English']
     flash_card.itemconfig(word, text=english_word, fill="white")
+
+
+def remove_word():
+    words_to_learn.remove(random_word)
+    pandas.DataFrame(words_to_learn).to_csv('data/words_to_learn.csv', index=False)
+    next_card()
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -51,7 +62,7 @@ word = flash_card.create_text(400, 263, font=("Ariel", 60, "bold"), text="", fil
 flash_card.grid(column=0, row=0, columnspan=2)
 
 # Buttons
-right_button = Button(image=right_img, highlightthickness=0, highlightbackground=BACKGROUND_COLOR, command=next_card)
+right_button = Button(image=right_img, highlightthickness=0, highlightbackground=BACKGROUND_COLOR, command=remove_word)
 wrong_button = Button(image=wrong_img, highlightthickness=0, highlightbackground=BACKGROUND_COLOR, command=next_card)
 right_button.grid(column=1, row=1)
 wrong_button.grid(column=0, row=1)
